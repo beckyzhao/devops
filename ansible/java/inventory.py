@@ -38,7 +38,7 @@ class JavaInventory(object):
     def java_inventory(self, service_name, group_name, servers):
         inventory = {group_name: {'hosts':[],'vars':{}}}
         try:
-            con = mdb.connect(host='jy.logsearch.w.qiyi.db',user='logsearch',passwd='*******',port=8527,charset='utf8')
+            con = mdb.connect(host='*************',user='**********',passwd='*******',port=8527,charset='utf8')
             with con:
                 con.select_db('logsearch')
                 cur = con.cursor(mdb.cursors.DictCursor)
