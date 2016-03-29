@@ -1,0 +1,19 @@
+---
+# deploy java project
+- hosts: "{{group_name}}"
+  tasks:
+    - local_action: stat path="{{VIS_BUILD_FINAL_DIR}}/{{VIS_BUILD_FINAL_NAME}}.tar.gz"
+      register: tar    
+    - local_action: stat path="{{VIS_BUILD_FINAL_DIR}}/{{VIS_BUILD_FINAL_NAME}}.war"
+      register: war
+    - set_fact: fm="{{'tar' if tar.stat.exists else 'war'}}"
+    - shell: mkdir -p /data/vrsapps/{{MODULE_NAME}}
+      when: tar.stat.exists or war.stat.exists
+    - copy: src="{{VIS_BUILD_FINAL_DIR}}/{{VIS_BUILD_FINAL_NAME}}.{{'tar.gz' if fm=='tar' else 'war'}}" dest=/data/vrsapps/{{MODULE_NAME}}/ force=yes
+      when: (tar.stat.exists or war.stat.exists) and 'DEPLOY'==OPERATION
+    - script: "./scripts/run_remote_{{fm}}.sh {{MODULE_NAME}} {{VIS_BUILD_FINAL_NAME}} '-p {{port}}'"
+      register: result
+      when: (tar.stat.exists or war.stat.exists) and 'DEPLOY'==OPERATION and 'true'==RUN_REMOTE
+    - script: "./scripts/rollback_remote.sh {{MODULE_NAME}} '-p {{port}}'"
+      when: '"ROLLBACK"==OPERATION'
+    #- debug: msg="{{ result.stdout }}"
